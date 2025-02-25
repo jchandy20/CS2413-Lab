@@ -1,0 +1,77 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+// Function to remove all nodes with value equal to val
+struct ListNode* removeElements(struct ListNode* head, int val) {
+    // Create a dummy node, which simplifies edge cases like removing the head
+    struct ListNode *dummy = (struct ListNode*)malloc(sizeof(struct ListNode));
+    dummy->val = -1;  // Assign a dummy value to the dummy node
+    dummy->next = head;
+
+    // Current node will point to the dummy node initially
+    struct ListNode *current = dummy;
+
+    // Traverse the list
+    while (current->next != NULL) {
+        if (current->next->val == val) {
+            // Skip the node that has the value equal to val
+            struct ListNode *temp = current->next;
+            current->next = current->next->next;
+            free(temp);  // Free the memory of the removed node
+        } else {
+            // Move to the next node
+            current = current->next;
+        }
+    }
+
+    // The new head of the list is the node after the dummy node
+    struct ListNode *newHead = dummy->next;
+    free(dummy);  // Free the dummy node memory
+    return newHead;
+}
+
+// Function to create a new node
+struct ListNode* createNode(int val) {
+    struct ListNode *newNode = (struct ListNode*)malloc(sizeof(struct ListNode));
+    newNode->val = val;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to print the linked list
+void printList(struct ListNode* head) {
+    struct ListNode *current = head;
+    while (current != NULL) {
+        printf("%d -> ", current->val);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+int main() {
+    // Creating a linked list: 1 -> 2 -> 6 -> 3 -> 4 -> 5 -> 6
+    struct ListNode *head = createNode(1);
+    head->next = createNode(2);
+    head->next->next = createNode(6);
+    head->next->next->next = createNode(3);
+    head->next->next->next->next = createNode(4);
+    head->next->next->next->next->next = createNode(5);
+    head->next->next->next->next->next->next = createNode(6);
+
+    printf("Original List: ");
+    printList(head);
+
+    // Remove nodes with value 6
+    head = removeElements(head, 6);
+
+    printf("List after removal: ");
+    printList(head);
+
+    return 0;
+}
