@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+// Iterative approach to reverse the linked list
+struct ListNode* reverseListIterative(struct ListNode* head) {
+    struct ListNode *prev = NULL;
+    struct ListNode *current = head;
+    struct ListNode *next = NULL;
+    
+    while (current != NULL) {
+        next = current->next;  // Save the next node
+        current->next = prev;  // Reverse the link
+        prev = current;        // Move prev and current one step forward
+        current = next;
+    }
+    
+    return prev;  // The new head of the reversed list
+}
+
+// Recursive approach to reverse the linked list
+struct ListNode* reverseListRecursive(struct ListNode* head) {
+    // Base case: If the list is empty or has only one node, return head
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+    
+    // Recursive case: reverse the rest of the list
+    struct ListNode* newHead = reverseListRecursive(head->next);
+    
+    // Adjust the current node's next pointer
+    head->next->next = head;
+    head->next = NULL;
+    
+    return newHead;  // Return the new head of the reversed list
+}
+
+// Function to create a new node
+struct ListNode* createNode(int val) {
+    struct ListNode* newNode = (struct ListNode*)malloc(sizeof(struct ListNode));
+    newNode->val = val;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to print the linked list
+void printList(struct ListNode* head) {
+    struct ListNode* current = head;
+    while (current != NULL) {
+        printf("%d -> ", current->val);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+int main() {
+    // Creating a linked list: 1 -> 2 -> 3 -> 4 -> 5
+    struct ListNode* head = createNode(1);
+    head->next = createNode(2);
+    head->next->next = createNode(3);
+    head->next->next->next = createNode(4);
+    head->next->next->next->next = createNode(5);
+
+    printf("Original List: ");
+    printList(head);
+
+    // Reverse the list using the iterative method
+    struct ListNode* reversedHeadIterative = reverseListIterative(head);
+    printf("Reversed List (Iterative): ");
+    printList(reversedHeadIterative);
+
+    // Creating a new list: 1 -> 2 -> 3 -> 4 -> 5
+    head = createNode(1);
+    head->next = createNode(2);
+    head->next->next = createNode(3);
+    head->next->next->next = createNode(4);
+    head->next->next->next->next = createNode(5);
+
+    // Reverse the list using the recursive method
+    struct ListNode* reversedHeadRecursive = reverseListRecursive(head);
+    printf("Reversed List (Recursive): ");
+    printList(reversedHeadRecursive);
+
+    return 0;
+}
