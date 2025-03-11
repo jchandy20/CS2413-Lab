@@ -2,92 +2,102 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+// Define stack structure
 typedef struct {
-    int *queue1;
-    int *queue2;
-    int front1, rear1, front2, rear2;
-    int capacity;
-} MyStack;
+    int data[100];  // Fixed size stack, can be dynamically allocated for larger input
+    int top;
+} Stack;
 
-// Function to initialize the stack
-MyStack* myStackCreate(int capacity) {
-    MyStack* stack = (MyStack*)malloc(sizeof(MyStack));
-    stack->queue1 = (int*)malloc(capacity * sizeof(int));
-    stack->queue2 = (int*)malloc(capacity * sizeof(int));
-    stack->front1 = stack->rear1 = -1;
-    stack->front2 = stack->rear2 = -1;
-    stack->capacity = capacity;
-    return stack;
+// Initialize stack
+void initStack(Stack *s) {
+    s->top = -1;
 }
 
-// Function to check if a queue is empty
-bool isEmptyQueue(int front, int rear) {
-    return front == -1;
+// Check if stack is empty
+bool isEmpty(Stack *s) {
+    return s->top == -1;
 }
 
-// Push element onto the stack
-void myStackPush(MyStack* obj, int x) {
-    if (obj->rear1 == obj->capacity - 1) return; // Queue full check
+// Push element onto stack
+void pushStack(Stack *s, int x) {
+    s->data[++(s->top)] = x;
+}
 
-    if (isEmptyQueue(obj->front1, obj->rear1)) {
-        obj->front1 = 0;
+// Pop element from stack
+int popStack(Stack *s) {
+    if (!isEmpty(s)) {
+        return s->data[(s->top)--];
     }
-    obj->queue1[++(obj->rear1)] = x; // Enqueue into queue1
+    return -1; // Should not happen as per problem constraints
 }
 
-// Pop the element from the top of the stack
-int myStackPop(MyStack* obj) {
-    if (isEmptyQueue(obj->front1, obj->rear1)) return -1; // Stack empty case
-
-    // Move all elements except last from queue1 to queue2
-    while (obj->front1 < obj->rear1) {
-        obj->queue2[++(obj->rear2)] = obj->queue1[obj->front1++];
+// Peek top element of stack
+int peekStack(Stack *s) {
+    if (!isEmpty(s)) {
+        return s->data[s->top];
     }
-
-    // The last element in queue1 is the top of the stack
-    int poppedValue = obj->queue1[obj->front1];
-    
-    // Swap queue1 and queue2
-    int *tempQueue = obj->queue1;
-    obj->queue1 = obj->queue2;
-    obj->queue2 = tempQueue;
-
-    // Reset queue1 pointers
-    obj->front1 = 0;
-    obj->rear1 = obj->rear2;
-    obj->front2 = obj->rear2 = -1;
-
-    return poppedValue;
+    return -1;
 }
 
-// Get the top element
-int myStackTop(MyStack* obj) {
-    if (isEmptyQueue(obj->front1, obj->rear1)) return -1; // Stack empty case
+// Define Queue structure using two stacks
+typedef struct {
+    Stack stack1;  // Primary stack for push
+    Stack stack2;  // Secondary stack for pop
+} MyQueue;
 
-    return obj->queue1[obj->rear1]; // Last inserted element is the top
+// Initialize queue
+void myQueueInit(MyQueue *obj) {
+    initStack(&obj->stack1);
+    initStack(&obj->stack2);
 }
 
-// Returns whether the stack is empty
-bool myStackEmpty(MyStack* obj) {
-    return isEmptyQueue(obj->front1, obj->rear1);
+// Push element x to the back of the queue
+void myQueuePush(MyQueue *obj, int x) {
+    pushStack(&obj->stack1, x);
 }
 
-// Free allocated memory
-void myStackFree(MyStack* obj) {
-    free(obj->queue1);
-    free(obj->queue2);
-    free(obj);
+// Move elements from stack1 to stack2 if stack2 is empty
+void transferStack1ToStack2(MyQueue *obj) {
+    if (isEmpty(&obj->stack2)) {
+        while (!isEmpty(&obj->stack1)) {
+            pushStack(&obj->stack2, popStack(&obj->stack1));
+        }
+    }
 }
 
-// Example usage
+// Removes and returns the front element of the queue
+int myQueuePop(MyQueue *obj) {
+    transferStack1ToStack2();  // Ensure stack2 has the oldest elements
+    return popStack(&obj->stack2);
+}
+
+// Get the front element
+int myQueuePeek(MyQueue *obj) {
+    transferStack1ToStack2();  // Ensure stack2 has the oldest elements
+    return peekStack(&obj->stack2);
+}
+
+// Check if queue is empty
+bool myQueueEmpty(MyQueue *obj) {
+    return isEmpty(&obj->stack1) && isEmpty(&obj->stack2);
+}
+
+// Free queue (not needed for this implementation)
+void myQueueFree(MyQueue *obj) {
+    // No dynamic memory was allocated, so nothing to free
+}
+
+// Main function to test MyQueue
 int main() {
-    MyStack* myStack = myStackCreate(100);
-    myStackPush(myStack, 1);
-    myStackPush(myStack, 2);
-    printf("%d\n", myStackTop(myStack));  // Output: 2
-    printf("%d\n", myStackPop(myStack));  // Output: 2
-    printf("%d\n", myStackEmpty(myStack)); // Output: 0 (false)
+    MyQueue myQueue;
+    myQueueInit(&myQueue);
 
-    myStackFree(myStack);
+    myQueuePush(&myQueue, 1);  // queue: [1]
+    myQueuePush(&myQueue, 2);  // queue: [1, 2]
+
+    printf("%d\n", myQueuePeek(&myQueue)); // Output: 1
+    printf("%d\n", myQueuePop(&myQueue));  // Output: 1
+    printf("%d\n", myQueueEmpty(&myQueue)); // Output: 0 (false)
+
     return 0;
 }
