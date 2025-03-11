@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+typedef struct {
+    int *stack_in;
+    int *stack_out;
+    int top_in;
+    int top_out;
+    int capacity;
+} MyQueue;
+
+// Function to initialize the queue
+MyQueue* myQueueCreate(int capacity) {
+    MyQueue* queue = (MyQueue*)malloc(sizeof(MyQueue));
+    queue->stack_in = (int*)malloc(capacity * sizeof(int));
+    queue->stack_out = (int*)malloc(capacity * sizeof(int));
+    queue->top_in = -1;
+    queue->top_out = -1;
+    queue->capacity = capacity;
+    return queue;
+}
+
+// Push element x to the back of the queue
+void myQueuePush(MyQueue* obj, int x) {
+    if (obj->top_in < obj->capacity - 1) {
+        obj->stack_in[++(obj->top_in)] = x;
+    }
+}
+
+// Move elements from stack_in to stack_out if stack_out is empty
+void shiftStacks(MyQueue* obj) {
+    if (obj->top_out == -1) {
+        while (obj->top_in >= 0) {
+            obj->stack_out[++(obj->top_out)] = obj->stack_in[(obj->top_in)--];
+        }
+    }
+}
+
+// Removes the element from the front of the queue and returns it
+int myQueuePop(MyQueue* obj) {
+    shiftStacks(obj);
+    if (obj->top_out != -1) {
+        return obj->stack_out[(obj->top_out)--];
+    }
+    return -1; // Error case (queue is empty)
+}
+
+// Get the front element
+int myQueuePeek(MyQueue* obj) {
+    shiftStacks(obj);
+    if (obj->top_out != -1) {
+        return obj->stack_out[obj->top_out];
+    }
+    return -1; // Error case (queue is empty)
+}
+
+// Returns whether the queue is empty
+bool myQueueEmpty(MyQueue* obj) {
+    return obj->top_in == -1 && obj->top_out == -1;
+}
+
+// Free memory allocated for the queue
+void myQueueFree(MyQueue* obj) {
+    free(obj->stack_in);
+    free(obj->stack_out);
+    free(obj);
+}
+
+// Example usage
+int main() {
+    MyQueue* myQueue = myQueueCreate(100);
+    myQueuePush(myQueue, 1);
+    myQueuePush(myQueue, 2);
+    printf("%d\n", myQueuePeek());  // Output: 1
+    printf("%d\n", myQueuePop());   // Output: 1
+    printf("%d\n", myQueueEmpty()); // Output: 0 (false)
+    
+    myQueueFree(myQueue);
+    return 0;
+}
