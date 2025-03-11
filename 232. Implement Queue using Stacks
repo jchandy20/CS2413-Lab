@@ -2,80 +2,143 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-typedef struct {
-    int *stack_in;
-    int *stack_out;
-    int top_in;
-    int top_out;
+// Queue structure
+typedef struct Queue {
+    int *arr;
+    int front;
+    int rear;
+    int size;
     int capacity;
-} MyQueue;
+} Queue;
 
-// Function to initialize the queue
-MyQueue* myQueueCreate(int capacity) {
-    MyQueue* queue = (MyQueue*)malloc(sizeof(MyQueue));
-    queue->stack_in = (int*)malloc(capacity * sizeof(int));
-    queue->stack_out = (int*)malloc(capacity * sizeof(int));
-    queue->top_in = -1;
-    queue->top_out = -1;
+// Function to initialize a queue
+Queue* createQueue(int capacity) {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
     queue->capacity = capacity;
+    queue->front = 0;
+    queue->rear = -1;
+    queue->size = 0;
+    queue->arr = (int*)malloc(sizeof(int) * capacity);
     return queue;
 }
 
-// Push element x to the back of the queue
-void myQueuePush(MyQueue* obj, int x) {
-    if (obj->top_in < obj->capacity - 1) {
-        obj->stack_in[++(obj->top_in)] = x;
+// Function to check if the queue is empty
+bool isEmpty(Queue* queue) {
+    return queue->size == 0;
+}
+
+// Function to add an element to the queue
+void enqueue(Queue* queue, int value) {
+    if (queue->size == queue->capacity) {
+        printf("Queue is full\n");
+        return;
     }
+    queue->arr[++queue->rear] = value;
+    queue->size++;
 }
 
-// Move elements from stack_in to stack_out if stack_out is empty
-void shiftStacks(MyQueue* obj) {
-    if (obj->top_out == -1) {
-        while (obj->top_in >= 0) {
-            obj->stack_out[++(obj->top_out)] = obj->stack_in[(obj->top_in)--];
-        }
+// Function to remove an element from the queue
+int dequeue(Queue* queue) {
+    if (isEmpty(queue)) {
+        printf("Queue is empty\n");
+        return -1;
     }
+    int frontValue = queue->arr[queue->front];
+    queue->front++;
+    queue->size--;
+    return frontValue;
 }
 
-// Removes the element from the front of the queue and returns it
-int myQueuePop(MyQueue* obj) {
-    shiftStacks(obj);
-    if (obj->top_out != -1) {
-        return obj->stack_out[(obj->top_out)--];
+// Function to get the front element of the queue
+int front(Queue* queue) {
+    if (isEmpty(queue)) {
+        printf("Queue is empty\n");
+        return -1;
     }
-    return -1; // Error case (queue is empty)
+    return queue->arr[queue->front];
 }
 
-// Get the front element
-int myQueuePeek(MyQueue* obj) {
-    shiftStacks(obj);
-    if (obj->top_out != -1) {
-        return obj->stack_out[obj->top_out];
+// Function to clear the queue
+void clearQueue(Queue* queue) {
+    free(queue->arr);
+    free(queue);
+}
+
+// MyStack structure
+typedef struct MyStack {
+    Queue *q1;
+    Queue *q2;
+} MyStack;
+
+// Function to initialize the stack
+MyStack* createStack() {
+    MyStack* stack = (MyStack*)malloc(sizeof(MyStack));
+    stack->q1 = createQueue(100);
+    stack->q2 = createQueue(100);
+    return stack;
+}
+
+// Function to push an element onto the stack
+void push(MyStack* stack, int x) {
+    enqueue(stack->q1, x);
+}
+
+// Function to pop an element from the stack
+int pop(MyStack* stack) {
+    while (stack->q1->size > 1) {
+        enqueue(stack->q2, dequeue(stack->q1));
     }
-    return -1; // Error case (queue is empty)
+    int topElement = dequeue(stack->q1);
+    
+    // Swap q1 and q2
+    Queue* temp = stack->q1;
+    stack->q1 = stack->q2;
+    stack->q2 = temp;
+    
+    return topElement;
 }
 
-// Returns whether the queue is empty
-bool myQueueEmpty(MyQueue* obj) {
-    return obj->top_in == -1 && obj->top_out == -1;
+// Function to get the top element of the stack
+int top(MyStack* stack) {
+    while (stack->q1->size > 1) {
+        enqueue(stack->q2, dequeue(stack->q1));
+    }
+    int topElement = front(stack->q1);
+    
+    // Move the element back to q2
+    enqueue(stack->q2, dequeue(stack->q1));
+    
+    // Swap q1 and q2
+    Queue* temp = stack->q1;
+    stack->q1 = stack->q2;
+    stack->q2 = temp;
+    
+    return topElement;
 }
 
-// Free memory allocated for the queue
-void myQueueFree(MyQueue* obj) {
-    free(obj->stack_in);
-    free(obj->stack_out);
-    free(obj);
+// Function to check if the stack is empty
+bool empty(MyStack* stack) {
+    return isEmpty(stack->q1);
+}
+
+// Function to free the stack
+void freeStack(MyStack* stack) {
+    clearQueue(stack->q1);
+    clearQueue(stack->q2);
+    free(stack);
 }
 
 // Example usage
 int main() {
-    MyQueue* myQueue = myQueueCreate(100);
-    myQueuePush(myQueue, 1);
-    myQueuePush(myQueue, 2);
-    printf("%d\n", myQueuePeek());  // Output: 1
-    printf("%d\n", myQueuePop());   // Output: 1
-    printf("%d\n", myQueueEmpty()); // Output: 0 (false)
+    MyStack* myStack = createStack();
     
-    myQueueFree(myQueue);
+    push(myStack, 1);
+    push(myStack, 2);
+    printf("Top element: %d\n", top(myStack)); // Output: 2
+    printf("Popped element: %d\n", pop(myStack)); // Output: 2
+    printf("Is stack empty? %d\n", empty(myStack)); // Output: 0 (false)
+    
+    freeStack(myStack);
+    
     return 0;
 }
