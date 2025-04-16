@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
+
+// Stack to store tree nodes for iterative traversal
+struct Stack {
+    struct TreeNode** nodes;
+    int top;
+    int capacity;
+};
+
+// Function to initialize the stack
+void initStack(struct Stack* stack, int capacity) {
+    stack->capacity = capacity;
+    stack->top = -1;
+    stack->nodes = (struct TreeNode**)malloc(sizeof(struct TreeNode*) * capacity);
+}
+
+// Function to push an element onto the stack
+void push(struct Stack* stack, struct TreeNode* node) {
+    stack->nodes[++(stack->top)] = node;
+}
+
+// Function to pop an element from the stack
+struct TreeNode* pop(struct Stack* stack) {
+    return stack->nodes[(stack->top)--];
+}
+
+// Function to check if the stack is empty
+int isEmpty(struct Stack* stack) {
+    return stack->top == -1;
+}
+
+// Function to perform iterative preorder traversal
+void preorderTraversal(struct TreeNode* root) {
+    if (root == NULL) return;
+    
+    struct Stack stack;
+    initStack(&stack, 100); // Assuming a max capacity of 100
+    push(&stack, root);
+    
+    while (!isEmpty(&stack)) {
+        struct TreeNode* current = pop(&stack);
+        
+        // Process the current node
+        printf("%d ", current->val);
+        
+        // Push the right child first, then the left child (if they exist)
+        if (current->right != NULL) {
+            push(&stack, current->right);
+        }
+        if (current->left != NULL) {
+            push(&stack, current->left);
+        }
+    }
+    printf("\n");
+}
+
+// Helper function to create a new node
+struct TreeNode* createNode(int val) {
+    struct TreeNode* node = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+    node->val = val;
+    node->left = node->right = NULL;
+    return node;
+}
+
+// Test the preorder traversal
+int main() {
+    // Constructing the tree [1, null, 2, 3]
+    struct TreeNode* root = createNode(1);
+    root->right = createNode(2);
+    root->right->left = createNode(3);
+
+    // Preorder traversal: [1, 2, 3]
+    preorderTraversal(root);
+
+    // Free the allocated memory (not needed for small programs)
+    free(root->right->left);
+    free(root->right);
+    free(root);
+
+    return 0;
+}
