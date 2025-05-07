@@ -1,0 +1,73 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
+
+// Helper function to check if two trees are mirrors of each other
+int isMirror(struct TreeNode* t1, struct TreeNode* t2) {
+    // If both nodes are NULL, they are symmetric
+    if (t1 == NULL && t2 == NULL) {
+        return 1;
+    }
+    // If only one of the nodes is NULL, they are not symmetric
+    if (t1 == NULL || t2 == NULL) {
+        return 0;
+    }
+    // Check if the values are the same and if their subtrees are mirrors
+    return (t1->val == t2->val) && isMirror(t1->left, t2->right) && isMirror(t1->right, t2->left);
+}
+
+// Main function to check if the tree is symmetric
+int isSymmetric(struct TreeNode* root) {
+    if (root == NULL) {
+        return 1; // An empty tree is symmetric
+    }
+    // Check if the left and right subtrees are mirrors of each other
+    return isMirror(root->left, root->right);
+}
+
+// Helper function to create a new tree node
+struct TreeNode* createNode(int val) {
+    struct TreeNode* newNode = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+    newNode->val = val;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Example usage
+int main() {
+    // Example 1: Symmetric tree
+    struct TreeNode* root1 = createNode(1);
+    root1->left = createNode(2);
+    root1->right = createNode(2);
+    root1->left->left = createNode(3);
+    root1->left->right = createNode(4);
+    root1->right->left = createNode(4);
+    root1->right->right = createNode(3);
+
+    if (isSymmetric(root1)) {
+        printf("Tree 1 is symmetric.\n");
+    } else {
+        printf("Tree 1 is not symmetric.\n");
+    }
+
+    // Example 2: Asymmetric tree
+    struct TreeNode* root2 = createNode(1);
+    root2->left = createNode(2);
+    root2->right = createNode(2);
+    root2->left->right = createNode(3);
+    root2->right->right = createNode(3);
+
+    if (isSymmetric(root2)) {
+        printf("Tree 2 is symmetric.\n");
+    } else {
+        printf("Tree 2 is not symmetric.\n");
+    }
+
+    return 0;
+}
