@@ -1,56 +1,58 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-void dfs(char** grid, int row, int col, int numRows, int numCols) {
-    if (row < 0 || row >= numRows || col < 0 || col >= numCols || grid[row][col] == '0') {
+void dfs(char grid[][300], int i, int j, int m, int n) {
+    // Base case: If out of bounds or water ('0')
+    if (i < 0 || i >= m || j < 0 || j >= n || grid[i][j] == '0') {
         return;
     }
-    grid[row][col] = '0'; // Mark the current cell as visited (water)
-    dfs(grid, row + 1, col, numRows, numCols); // Down
-    dfs(grid, row - 1, col, numRows, numCols); // Up
-    dfs(grid, row, col + 1, numRows, numCols); // Right
-    dfs(grid, row, col - 1, numRows, numCols); // Left
+    
+    // Mark the current land cell as visited
+    grid[i][j] = '0';
+    
+    // Explore all four directions (up, down, left, right)
+    dfs(grid, i + 1, j, m, n); // down
+    dfs(grid, i - 1, j, m, n); // up
+    dfs(grid, i, j + 1, m, n); // right
+    dfs(grid, i, j - 1, m, n); // left
 }
 
-int numIslands(char** grid, int numRows, int* numCols) {
-    if (numRows == 0 || *numCols == 0) {
-        return 0;
-    }
-
+int numIslands(char grid[][300], int m, int n) {
     int islandCount = 0;
-    for (int i = 0; i < numRows; i++) {
-        for (int j = 0; j < *numCols; j++) {
+    
+    // Traverse each cell of the grid
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            // If we find land, start DFS and mark all connected lands as visited
             if (grid[i][j] == '1') {
+                dfs(grid, i, j, m, n);
                 islandCount++;
-                dfs(grid, i, j, numRows, *numCols); // Explore the entire island
             }
         }
     }
+    
     return islandCount;
 }
 
 int main() {
     // Example 1
-    char* grid1[] = {
-        "11110",
-        "11010",
-        "11000",
-        "00000"
+    char grid1[4][5] = {
+        {'1', '1', '1', '1', '0'},
+        {'1', '1', '0', '1', '0'},
+        {'1', '1', '0', '0', '0'},
+        {'0', '0', '0', '0', '0'}
     };
-    int numRows1 = sizeof(grid1) / sizeof(grid1[0]);
-    int numCols1 = strlen(grid1[0]);
-    printf("Number of islands (Example 1): %d\n", numIslands(grid1, numRows1, &numCols1));
+    int m1 = 4, n1 = 5;
+    printf("Number of islands in grid1: %d\n", numIslands(grid1, m1, n1));
 
     // Example 2
-    char* grid2[] = {
-        "11000",
-        "11000",
-        "00100",
-        "00011"
+    char grid2[4][5] = {
+        {'1', '1', '0', '0', '0'},
+        {'1', '1', '0', '0', '0'},
+        {'0', '0', '1', '0', '0'},
+        {'0', '0', '0', '1', '1'}
     };
-    int numRows2 = sizeof(grid2) / sizeof(grid2[0]);
-    int numCols2 = strlen(grid2[0]);
-    printf("Number of islands (Example 2): %d\n", numIslands(grid2, numRows2, &numCols2));
+    int m2 = 4, n2 = 5;
+    printf("Number of islands in grid2: %d\n", numIslands(grid2, m2, n2));
 
     return 0;
 }
